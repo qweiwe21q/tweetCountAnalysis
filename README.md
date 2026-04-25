@@ -16,3 +16,5 @@ streamlit run app.py
 示例：
 file_name = "elonmusk-Elon_Musk___tweets_April_21___April_28__2026_-tweets.csv"
 
+![img.png](img.png)
+![img_1.png](img_1.png)
