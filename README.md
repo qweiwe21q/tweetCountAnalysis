@@ -1,14 +1,15 @@
-# tweetCountAnalysis
- 用于分析推特发帖数量
+# 用于分析推特发帖数量
 
 官方数据源
 [//]: # (https://xtracker.polymarket.com)
 下载导入即可
 ![img_2.png](img_2.png)
 
+
+
 三方分析网站：
 [//]: # (https://elon-tracker.com/analytics)
-
+![img_3.png](img_3.png)
 
 运行命令：
 必须项目路径下黑窗口执行
