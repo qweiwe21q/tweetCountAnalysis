@@ -3,6 +3,8 @@
 
 官方数据源
 [//]: # (https://xtracker.polymarket.com)
+下载导入即可
+![img_2.png](img_2.png)
 
 三方分析网站：
 [//]: # (https://elon-tracker.com/analytics)
