@@ -20,7 +20,7 @@
 必须项目路径下黑窗口执行
 streamlit run app.py
 
-替换自己的文件即可：
+app.py替换自己的文件即可：
 示例：
 file_name = "elonmusk-Elon_Musk___tweets_April_21___April_28__2026_-tweets.csv"
 

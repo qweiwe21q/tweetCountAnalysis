@@ -7,6 +7,7 @@ def estimate_tweets_in_7days(day:int,remaining_str: str, tweets_number: int) -> 
     根据剩余时间和已发推特数量，估算7天内总共会发多少推特
 
     参数:
+        day：发帖天数 如果是2天就写2  如果是7天就写7
         remaining_str: str - 剩余时间，格式 "天-小时-分钟"，例如 "3-7-50"
         tweets_number: int - 当前已经发的推特数量
 
