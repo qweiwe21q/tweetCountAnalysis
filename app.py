@@ -4,9 +4,8 @@ import plotly.express as px
 import re
 from datetime import datetime, timedelta
 
-# file_name = "WhiteHouse-White_House___posts_April_21___April_28__2026_-tweets.csv"
-# file_name = "WhiteHouse-White_House___posts_April_17___April_24__2026_-tweets.csv"
-file_name = "elonmusk-Elon_Musk___tweets_April_21___April_28__2026_-tweets.csv"
+
+file_name = "elonmusk-Elon_Musk___tweets_May_19___May_26__2026_-tweets.csv"
 
 # ^ 表示从字符串开头开始匹配
 # ([^-]+) 表示匹配直到遇到第一个连字符 - 为止的所有字符
@@ -27,6 +26,9 @@ def load_data():
     df['full_time_str'] = df['Posted Date'].astype(str) + ' ' + df['Posted At (EST)'].astype(str)
     df['dt'] = pd.to_datetime(df['full_time_str'], errors='coerce')
 
+    # ==================== 这里修改时间（核心） ====================
+    df['dt'] = df['dt'] - pd.Timedelta(hours=12)
+
     # df['dt'] = pd.to_datetime(df['Posted At (EST)'])
     # 提取日期字符串（用于行索引）
     df['Date'] = df['Posted At (EST)'].dt.date
@@ -41,17 +43,50 @@ def load_data():
 
 df = load_data()
 
-def get_range_from_filename(name):
-    # 正则表达式匹配类似 April_17 和 April_24 的字段
-    dates = re.findall(r'([A-Z][a-z]+_\d{1,2})', name)
-    if len(dates) >= 2:
-        # 将字符串转为日期对象（假设年份为 2026）
-        start_dt = datetime.strptime(f"{dates[0]}_2026", "%B_%d_%Y").date()
-        end_dt = datetime.strptime(f"{dates[1]}_2026", "%B_%d_%Y").date()
-        return start_dt, end_dt
-    return None, None
+# def get_range_from_filename(name):
+#     # 正则表达式匹配类似 April_17 和 April_24 的字段
+#     dates = re.findall(r'([A-Z][a-z]+_\d{1,2})', name)
+#     if len(dates) >= 2:
+#         # 将字符串转为日期对象（假设年份为 2026）
+#         start_dt = datetime.strptime(f"{dates[0]}_2026", "%B_%d_%Y").date()
+#         end_dt = datetime.strptime(f"{dates[1]}_2026", "%B_%d_%Y").date()
+#         return start_dt, end_dt
+#     return None, None
+#
+# start_date, end_date = get_range_from_filename(file_name)
 
-start_date, end_date = get_range_from_filename(file_name)
+
+def get_range_from_remaining(remaining_str):
+    """
+    输入格式: "2-13-38" (2天13小时38分)
+    返回: (开始日期, 结束日期)
+    """
+    # 1. 用正则提取 天、小时、分
+    match = re.match(r'(\d+)-(\d+)-(\d+)', remaining_str)
+    if not match:
+        return None, None
+
+    days, hours, minutes = map(int, match.groups())
+
+    # 2. 获取当前系统时间作为基准
+    now = datetime.now()
+
+    # 3. 计算剩余总时长
+    remaining_delta = timedelta(days=days, hours=hours, minutes=minutes)
+
+    # 4. 结束时间 = 现在 + 剩余时间
+    end_dt = now + remaining_delta
+
+    # 5. 开始时间 = 结束时间 - 7天
+    start_dt = end_dt - timedelta(days=7)
+
+    # 返回日期对象 (.date() 只保留年月日，如果需要具体时间就去掉 .date())
+    return start_dt.date(), end_dt.date()
+
+
+# --- 测试用例 ---
+remaining_input = "2-13-38"
+start_date, end_date = get_range_from_remaining(remaining_input)
 
 # --- 2. 构建完整的日期占位列表 ---
 if start_date and end_date:
