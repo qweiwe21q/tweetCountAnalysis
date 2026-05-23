@@ -205,6 +205,26 @@ fig_heat = px.imshow(
     text_auto=True,
     aspect="auto"
 )
+def get_current_hour():
+    """返回当前小时（24小时制），并使用你之前的时间偏移"""
+    # 和你 load_data 里保持一致的偏移（-12小时）
+    now = datetime.now()
+    return now.hour
+
+# 手动添加你想改颜色的那个
+fig_heat.add_annotation(
+    x=get_current_hour(),                    # ← 这里改：0=0:00, 5=5:00, 15=15:00 ...
+    y=-0.09,
+    text=f"{get_current_hour()}:00",            # 要显示的文字
+    showarrow=False,
+    bgcolor="pink",                           # ← 背景颜色
+    font=dict(color="blue", size=13),
+    xref="x",
+    yref="paper",
+    xanchor="center"
+)
+
+fig_heat.update_yaxes(autorange="reversed")
 
 # 锁定缩放并隐藏工具栏
 fig_heat.update_layout(
