@@ -111,7 +111,7 @@ daily_stats = df.groupby('Date').size().reset_index(name='Tweet_Count')
 # 合并：确保文件名里的每一天在图表里都有位置
 final_df = pd.merge(full_range_df, daily_stats, on='Date', how='left').fillna(0)
 
-# --- 4. 绘图展示 ---
+# --- 4. 柱子样式  绘图展示 ---
 fig = px.bar(
     final_df,
     x='Date',
@@ -143,7 +143,7 @@ st.plotly_chart(fig, width="stretch",
 # --- 3. 7x24 矩阵逻辑补充 ---
 def get_heatmap_data(df, start_date, end_date):
     # 构建完整的时间轴范围
-    total_days = (end_date - start_date).days + 1
+    total_days = (end_date - start_date).days
     all_dates = [(start_date + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(total_days)]
 
     # 基础统计
@@ -193,13 +193,15 @@ st.plotly_chart(fig_top, use_container_width=True, config={'displayModeBar': Fal
 # B. 中间：热力图矩阵 (右侧自带 Total 列)
 st.subheader("🗓️ 7x24 活跃分布 (带日总量)")
 
+
+# 7*24样式设置
 # 为了让 Total 列看起来更显眼，我们可以给最后一列换个色标或者加个特殊标注
 fig_heat = px.imshow(
     heatmap_df,
     labels=dict(x="Hour & Daily Total", y="Date", color="Posts"),
     x=[f"{h}:00" for h in range(24)] + ["【TOTAL】"], # X轴增加一列
     y=heatmap_df.index,
-    color_continuous_scale='Blues',
+    color_continuous_scale='pubugn',  #底部颜色
     text_auto=True,
     aspect="auto"
 )
