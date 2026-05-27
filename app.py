@@ -27,7 +27,7 @@ def load_data():
     df['dt'] = pd.to_datetime(df['full_time_str'], errors='coerce')
 
     # ==================== 这里修改时间（核心） ====================
-    df['dt'] = df['dt'] - pd.Timedelta(hours=12)
+    df['dt'] = df['dt'] + pd.Timedelta(hours=12)
 
     # df['dt'] = pd.to_datetime(df['Posted At (EST)'])
     # 提取日期字符串（用于行索引）
@@ -91,7 +91,7 @@ start_date, end_date = get_range_from_remaining(remaining_input)
 # --- 2. 构建完整的日期占位列表 ---
 if start_date and end_date:
     # 计算总天数（包含结束当天）
-    total_days = (end_date - start_date).days + 1
+    total_days = (end_date - start_date).days
     fixed_dates = [start_date + timedelta(days=i) for i in range(total_days)]
     full_range_df = pd.DataFrame({'Date': fixed_dates})
 else:
