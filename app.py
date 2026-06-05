@@ -4,8 +4,10 @@ import plotly.express as px
 import re
 from datetime import datetime, timedelta
 
-
-file_name = "elonmusk-Elon_Musk___tweets_May_19___May_26__2026_-tweets.csv"
+# file_name = "elonmusk-Elon_Musk___tweets_May_19___May_26__2026_-tweets.csv"
+# file_name = "elonmusk-Elon_Musk___tweets_May_22___May_29__2026_-tweets.csv"
+file_name = "elonmusk-Elon_Musk___tweets_May_29___June_5__2026_-tweets.csv"
+# file_name = "WhiteHouse-White_House___posts_May_29___June_5__2026_-tweets.csv"
 
 # ^ 表示从字符串开头开始匹配
 # ([^-]+) 表示匹配直到遇到第一个连字符 - 为止的所有字符
@@ -27,12 +29,12 @@ def load_data():
     df['dt'] = pd.to_datetime(df['full_time_str'], errors='coerce')
 
     # ==================== 这里修改时间（核心） ====================
-    df['dt'] = df['dt'] + pd.Timedelta(hours=12)
+    df['dt'] = df['dt'] - pd.Timedelta(hours=12)
 
     # df['dt'] = pd.to_datetime(df['Posted At (EST)'])
     # 提取日期字符串（用于行索引）
     df['Date'] = df['Posted At (EST)'].dt.date
-
+    # df['Date'] = (df['Posted At (EST)'] + pd.Timedelta(hours=12)).dt.date
     # 提取小时（用于列索引）
 
 
@@ -43,55 +45,34 @@ def load_data():
 
 df = load_data()
 
-# def get_range_from_filename(name):
-#     # 正则表达式匹配类似 April_17 和 April_24 的字段
-#     dates = re.findall(r'([A-Z][a-z]+_\d{1,2})', name)
-#     if len(dates) >= 2:
-#         # 将字符串转为日期对象（假设年份为 2026）
-#         start_dt = datetime.strptime(f"{dates[0]}_2026", "%B_%d_%Y").date()
-#         end_dt = datetime.strptime(f"{dates[1]}_2026", "%B_%d_%Y").date()
-#         return start_dt, end_dt
-#     return None, None
-#
-# start_date, end_date = get_range_from_filename(file_name)
 
+def extract_dates_as_datetime(filename):
+    pattern = r"(\w+)_(\d+)_+_(\w+)_(\d+)_+(\d{4})"
+    pattern = r"posts_(\w+)_(\d+)_+_(\w+)_(\d+)_+(\d{4})"
+    pattern = r"(?:posts|tweets)_(\w+)_(\d+)_+_(\w+)_(\d+)_+(\d{4})"
+    match = re.search(pattern, filename)
 
-def get_range_from_remaining(remaining_str):
-    """
-    输入格式: "2-13-38" (2天13小时38分)
-    返回: (开始日期, 结束日期)
-    """
-    # 1. 用正则提取 天、小时、分
-    match = re.match(r'(\d+)-(\d+)-(\d+)', remaining_str)
     if not match:
         return None, None
 
-    days, hours, minutes = map(int, match.groups())
+    start_month = match.group(1)
+    start_day = int(match.group(2))
+    end_month = match.group(3)
+    end_day = int(match.group(4))
+    year = int(match.group(5))
 
-    # 2. 获取当前系统时间作为基准
-    now = datetime.now()
+    # 转换为 datetime 对象
+    start_date = datetime.strptime(f"{start_month} {start_day} {year}", "%B %d %Y")
+    end_date = datetime.strptime(f"{end_month} {end_day} {year}", "%B %d %Y")
 
-    # 3. 计算剩余总时长
-    remaining_delta = timedelta(days=days, hours=hours, minutes=minutes)
+    return start_date.date(), end_date.date()
 
-    # 4. 结束时间 = 现在 + 剩余时间
-    end_dt = now + remaining_delta
-
-    # 5. 开始时间 = 结束时间 - 7天
-    start_dt = end_dt - timedelta(days=7)
-
-    # 返回日期对象 (.date() 只保留年月日，如果需要具体时间就去掉 .date())
-    return start_dt.date(), end_dt.date()
-
-
-# --- 测试用例 ---
-remaining_input = "2-13-38"
-start_date, end_date = get_range_from_remaining(remaining_input)
+start_date, end_date = extract_dates_as_datetime(file_name)
 
 # --- 2. 构建完整的日期占位列表 ---
 if start_date and end_date:
     # 计算总天数（包含结束当天）
-    total_days = (end_date - start_date).days
+    total_days = (end_date - start_date).days+1
     fixed_dates = [start_date + timedelta(days=i) for i in range(total_days)]
     full_range_df = pd.DataFrame({'Date': fixed_dates})
 else:
