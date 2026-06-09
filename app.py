@@ -3,11 +3,12 @@ import pandas as pd
 import plotly.express as px
 import re
 from datetime import datetime, timedelta
+import DateUtils,TweetsNumber
 
 # file_name = "elonmusk-Elon_Musk___tweets_May_19___May_26__2026_-tweets.csv"
 # file_name = "elonmusk-Elon_Musk___tweets_May_22___May_29__2026_-tweets.csv"
-file_name = "elonmusk-Elon_Musk___tweets_May_29___June_5__2026_-tweets.csv"
-# file_name = "WhiteHouse-White_House___posts_May_29___June_5__2026_-tweets.csv"
+file_name = "elonmusk-Elon_Musk___tweets_June_2___June_9__2026_-tweets.csv"
+# file_name = "WhiteHouse-White_House___posts_June_2___June_9__2026_-tweets.csv"
 
 # ^ 表示从字符串开头开始匹配
 # ([^-]+) 表示匹配直到遇到第一个连字符 - 为止的所有字符
@@ -30,12 +31,7 @@ def load_data():
 
     # ==================== 这里修改时间（核心） ====================
     df['dt'] = df['dt'] - pd.Timedelta(hours=12)
-
-    # df['dt'] = pd.to_datetime(df['Posted At (EST)'])
-    # 提取日期字符串（用于行索引）
     df['Date'] = df['Posted At (EST)'].dt.date
-    # df['Date'] = (df['Posted At (EST)'] + pd.Timedelta(hours=12)).dt.date
-    # 提取小时（用于列索引）
 
 
     df['Date_line'] = df['dt'].dt.strftime('%Y-%m-%d')
@@ -46,9 +42,8 @@ def load_data():
 df = load_data()
 
 
+# 设置开始时间和结束时间
 def extract_dates_as_datetime(filename):
-    pattern = r"(\w+)_(\d+)_+_(\w+)_(\d+)_+(\d{4})"
-    pattern = r"posts_(\w+)_(\d+)_+_(\w+)_(\d+)_+(\d{4})"
     pattern = r"(?:posts|tweets)_(\w+)_(\d+)_+_(\w+)_(\d+)_+(\d{4})"
     match = re.search(pattern, filename)
 
@@ -72,7 +67,7 @@ start_date, end_date = extract_dates_as_datetime(file_name)
 # --- 2. 构建完整的日期占位列表 ---
 if start_date and end_date:
     # 计算总天数（包含结束当天）
-    total_days = (end_date - start_date).days+1
+    total_days = (end_date - start_date).days
     fixed_dates = [start_date + timedelta(days=i) for i in range(total_days)]
     full_range_df = pd.DataFrame({'Date': fixed_dates})
 else:
@@ -80,41 +75,15 @@ else:
     st.stop()
 
 
+reatinTime = DateUtils.get_remaining_time(str(end_date))
+tweetNumber = TweetsNumber.estimate_tweets_in_7days(7,reatinTime,len(df))
+
 # --- 第一排：核心指标 ---
-col1, col3 = st.columns(2)
+col1,col2, col3 = st.columns(3)
 col1.metric("总推文数", len(df))
 col3.metric("统计周期", f"{start_date} - {end_date}")
 
-
-# 统计实际发帖
-daily_stats = df.groupby('Date').size().reset_index(name='Tweet_Count')
-
-# 合并：确保文件名里的每一天在图表里都有位置
-final_df = pd.merge(full_range_df, daily_stats, on='Date', how='left').fillna(0)
-
-# --- 4. 柱子样式  绘图展示 ---
-fig = px.bar(
-    final_df,
-    x='Date',
-    y='Tweet_Count',
-    title=f"Activity Monitor: {start_date} to {end_date}",
-    text_auto=True,
-    color='Tweet_Count', # 根据数量深浅变色
-    color_continuous_scale='Blues',  # 使用蓝色系
-)
-
-
-# 强制 X 轴按顺序显示所有日期标签
-fig.update_xaxes(type='category', tickformat='%b %d',
-                 )
-fig.update_layout(
-    xaxis=dict(fixedrange=True),      # 锁定横轴，禁止鼠标拖动或缩放
-    yaxis=dict(fixedrange=True),      # 锁定纵轴，禁止鼠标拖动或缩放
-    dragmode=False                    # 彻底关闭拖拽模式
-)
-st.plotly_chart(fig, width="stretch",
-                config={'displayModeBar': False})
-
+col2.metric("推测",tweetNumber['estimated_total_in_7days'])
 
 
 # ==========================================
