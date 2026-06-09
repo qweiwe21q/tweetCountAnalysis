@@ -78,12 +78,12 @@ else:
 reatinTime = DateUtils.get_remaining_time(str(end_date))
 tweetNumber = TweetsNumber.estimate_tweets_in_7days(7,reatinTime,len(df))
 
+st.metric("统计周期", f"{start_date} —— {end_date}")
 # --- 第一排：核心指标 ---
 col1,col2, col3 = st.columns(3)
 col1.metric("总推文数", len(df))
-col3.metric("统计周期", f"{start_date} - {end_date}")
-
 col2.metric("推测",tweetNumber['estimated_total_in_7days'])
+col3.metric("平均每天发推",tweetNumber['rate_per_day'])
 
 
 # ==========================================
